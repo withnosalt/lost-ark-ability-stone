@@ -2,6 +2,6 @@
     "chance": 75,
     "currentLines": [0, 0, 0],
     "currentRolls": [0, 0, 0],
-    "targetLines": [7, 7, 4],
+    "targetLines": [[7, 7, 4], [9, 5, 4], [5, 9, 4]],
     "targetRolls": [10, 10, 10]
 }

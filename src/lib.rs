@@ -2,6 +2,8 @@ use std::fmt;
 
 use rustc_hash::FxHashMap;
 use wasm_bindgen::prelude::wasm_bindgen;
+use wasm_bindgen::{UnwrapThrowExt, JsCast};
+use js_sys::{Uint8Array, Array};
 
 uint::construct_uint! {
     pub struct U192(3);
@@ -175,19 +177,22 @@ impl Chance {
     }
 }
 
-#[wasm_bindgen]
+#[wasm_bindgen(js_name=expectimaxWasm)]
 pub fn expectimax_wasm(
     stone: Stone,
-    line_0: u8,
-    line_1: u8,
-    line_2: u8,
-    roll_0: u8,
-    roll_1: u8,
-    roll_2: u8,
+    lines_in: Array,
+    roll_in: Uint8Array,
     precision: u32,
 ) -> Box<[f64]> {
+    let roll: [u8; 3] = roll_in.to_vec().try_into().unwrap();
+
+    let targets: Vec<[u8; 3]> = lines_in.values().into_iter().map(|x| {
+            let a: [u8; 3] = x.unwrap_throw().unchecked_ref::<Uint8Array>().to_vec().try_into().unwrap();
+            a
+        }).collect();
+
     let (numerators, denominator) =
-        expectimax(stone, [line_0, line_1, line_2], [roll_0, roll_1, roll_2]);
+        expectimax(stone, targets, roll);
 
     let inflate = U192::from(10u64.pow(precision));
     let deflate = 10u64.pow(precision) as f64;
@@ -203,7 +208,7 @@ pub fn expectimax_wasm(
 /// current state `stone`, and optimal decision-making.
 ///
 /// Returns the numerators for each choice, and the denominator for all three.
-pub fn expectimax(stone: Stone, lines: [u8; 3], rolls: [u8; 3]) -> ([U192; 3], U192) {
+pub fn expectimax(stone: Stone, lines: Vec<[u8; 3]>, rolls: [u8; 3]) -> ([U192; 3], U192) {
     let mut expectimax = Expectimax::new(lines, rolls);
     let mut numerators = [U192::from(0u8); 3];
 
@@ -222,16 +227,16 @@ pub fn expectimax(stone: Stone, lines: [u8; 3], rolls: [u8; 3]) -> ([U192; 3], U
 
 struct Expectimax {
     cache: FxHashMap<Stone, U192>,
-    lines: [u8; 3],
+    targets: Vec<[u8; 3]>,
     rolls: [u8; 3],
 }
 
 impl Expectimax {
     /// Construct a new cache for evaluation.
-    fn new(lines: [u8; 3], rolls: [u8; 3]) -> Self {
+    fn new(targets: Vec<[u8; 3]>, rolls: [u8; 3]) -> Self {
         Expectimax {
             cache: FxHashMap::default(),
-            lines,
+            targets,
             rolls,
         }
     }
@@ -239,25 +244,34 @@ impl Expectimax {
     /// Compute the value of `stone`, if it is terminal.
     fn value(&self, stone: &Stone) -> Option<U192> {
         // Impossible to reach goal for any one line
-        if stone.lines[0] + self.rolls[0] - stone.rolls[0] < self.lines[0]
-            || stone.lines[1] + self.rolls[1] - stone.rolls[1] < self.lines[1]
-            || stone.lines[2] > self.lines[2]
-        {
-            return Some(U192::from(0));
+        let mut can_hit_goal = false;
+        for lines in &self.targets {
+            if stone.lines[0] + self.rolls[0] - stone.rolls[0] >= lines[0]
+                && stone.lines[1] + self.rolls[1] - stone.rolls[1] >= lines[1]
+                && stone.lines[2] <= lines[2]
+            {
+                can_hit_goal = true;
+            }
         }
 
-        // Successfully reached goal for all three lines
-        //
-        // Note: because we don't explicitly keep track of the denominator
-        // when multiplying and adding probabilities, we need to account for it
-        // here if we short-circuit at a shallower recursion depth.
-        if stone.lines[0] >= self.lines[0]
-            && stone.lines[1] >= self.lines[1]
-            && stone.lines[2] <= self.lines[2]
+        if can_hit_goal == false {
+            return Some(U192::from(0));
+        }
+        
+        for lines in &self.targets {
+            // Successfully reached goal for all three lines
+            //
+            // Note: because we don't explicitly keep track of the denominator
+            // when multiplying and adding probabilities, we need to account for it
+            // here if we short-circuit at a shallower recursion depth.
+            if stone.lines[0] >= lines[0]
+            && stone.lines[1] >= lines[1]
+            && stone.lines[2] <= lines[2]
             && stone.rolls[2] == self.rolls[2]
-        {
-            let height = self.rolls[0] + self.rolls[1] - stone.rolls[0] - stone.rolls[1];
-            return Some(U192::from(20u8).pow(U192::from(height)));
+            {
+                let height = self.rolls[0] + self.rolls[1] - stone.rolls[0] - stone.rolls[1];
+                return Some(U192::from(20u8).pow(U192::from(height)));
+            }
         }
 
         None

@@ -209,6 +209,11 @@
           return parseInt(rarity.value);
         }
 
+        function getRarities() {
+          let rar = parseInt(rarity.value);
+          return [rar, rar, rar];
+        }
+
         // Get next slot to roll in row.
         function getCurrent(row) {
           if (stone[row].length >= getRarity()) {
@@ -240,8 +245,12 @@
           return start.textContent === "Stop";
         }
 
-        function getTarget(row) {
-          return parseInt(target[row].value);
+        function getTarget() {
+          return [parseInt(target[0].value), parseInt(target[1].value), parseInt(target[2].value)];
+        }
+
+        function getTargets() {
+          return [getTarget()];
         }
 
         // Ensure chance is within [25, 35, ..., 75].
@@ -340,14 +349,10 @@
             stone[2].length,
           );
 
-          const _probability = facet.expectimax_wasm(
+          const _probability = facet.expectimaxWasm(
             _stone,
-            getTarget(0),
-            getTarget(1),
-            getTarget(2),
-            getRarity(),
-            getRarity(),
-            getRarity(),
+            getTargets(),
+            getRarities(),
             12,
           );
 

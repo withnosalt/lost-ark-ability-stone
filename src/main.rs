@@ -9,7 +9,7 @@ struct Facet {
     current_lines: [u8; 3],
     current_rolls: [u8; 3],
 
-    target_lines: [u8; 3],
+    target_lines: Vec<[u8; 3]>,
     target_rolls: [u8; 3],
 }
 
