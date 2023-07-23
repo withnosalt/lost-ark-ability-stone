@@ -2,41 +2,102 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <meta name="author" content="Newton Ni">
-    <meta name="description" content="Lost Ark ability stone optimal faceting calculator">
+    <meta name="description" content="Lost Ark ability stone calculator">
     <meta name="keywords" content="ability stone, calculator, engraving, facet, Lost Ark">
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
 
-    <title>Ability Stone Facet Calculator</title>
+    <title>Ability Stone Calculator</title>
     <style>
-    .parameter {
+    .miniheader {
+      margin-bottom: 20px;
+    }
+
+    .target-list {
+      width: 100%;
       display: block;
-      font-size: 20px;
-      margin: 10px 0;
+      overflow: auto;
+      height: auto !important;
     }
 
-    select {
-      font-size: 20px;
-      max-width: 200px;
+    .target-list-item:nth-of-type(1), .target-list-item-fake:nth-of-type(1) {
+      margin-left: 0px;
     }
 
-    input {
-      font-size: 20px;
+    .target-list-item {
+      background: #e3e3e3;
       max-width: 100px;
+      text-align: center;
+      padding: 8px 22px;
+      margin: 4px 4px 4px 4px;
+      float: left;
+      height: 62px;
+      line-height: 45px;
+      border-radius: var(--border-radius);
     }
 
-    #grid {
+    .target-list-item-fake {
+      border: 1px solid var(--form-element-border-color);
+      border-radius: var(--border-radius);
+      max-width: 100px;
+      height: 62px;
+      line-height: 45px;
+      text-align: center;
+      padding: 7px 21px;
+      margin: 4px 4px 4px 4px;
+      float: left;
+      
+    }
+    .parameter abbr {
+      color: #8d8d8d;
+    }
+
+    #grid, .grid-head {
       display: grid;
       justify-items: center;
       align-items: center;
-      grid-template-rows: repeat(3, 50px);
+      grid-template-rows: repeat(3, 66px);
+      grid-gap: 0;
     }
 
-    #grid.rarity-6 { grid-template-columns: repeat(6, 50px) 260px; }
-    #grid.rarity-8 { grid-template-columns: repeat(8, 50px) 260px; }
-    #grid.rarity-9 { grid-template-columns: repeat(9, 50px) 260px; }
-    #grid.rarity-10 { grid-template-columns: repeat(10, 50px) 260px; }
+    .grid-head {
+      margin-top: 20px;
+      grid-template-rows: repeat(1, 66px);
+    }
 
+    .grid-head div {
+      width: 100%;
+    }
+
+    .grid-head-success {
+      text-align: right;
+      padding-right: 8px;
+      font-size: 90%;
+      height: 46px;
+      padding-top: 18px;
+    }
+
+    #grid-foot.grid-head div {
+      padding-right: 10px;
+    }
+    #grid-foot .secondary {
+      border-color: var(--form-element-border-color);
+      width: 119px;
+      height: 60px;
+    }
+    #undo {
+      
+      float: right;
+    }
+
+    #grid.rarity-6 { grid-template-columns: repeat(6, 50px) 70px 70px 120px; }
+    #grid.rarity-8 { grid-template-columns: repeat(8, 50px) 70px 70px 120px; }
+    #grid.rarity-9 { grid-template-columns: repeat(9, 50px) 70px 70px 120px; }
+    #grid.rarity-10 { grid-template-columns: repeat(10, 50px) 70px 70px 120px; }
+    .grid-head.rarity-6 { grid-template-columns: 250px 190px; }
+    .grid-head.rarity-8 { grid-template-columns: 350px 190px; }
+    .grid-head.rarity-9 { grid-template-columns: 400px 190px; }
+    .grid-head.rarity-10 { grid-template-columns: 450px 190px; }
     .grid-row-0 {
       grid-row-start: 1;
     }
@@ -54,6 +115,42 @@
       font-size: 50px;
     }
 
+    .grid-action {
+      line-height: 44px;
+      height: 60px;
+    }
+
+    a.button-action.outline.contrast {
+      display: block;
+      height: 50px;
+      width: 50px;
+      line-height: 48px;
+      padding-top: 0;
+      font-size: 25px;
+      padding-bottom: 0px;
+      padding-left: 12px;
+      padding-right: 12px;
+      margin-top: 7px;
+      margin-bottom: 0px;
+      border: 1px solid var(--form-element-border-color);
+      text-decoration: none;
+      border-radius: var(--border-radius);
+      text-align: center;
+    }
+    a.button-action.outline.contrast.button-facet-max {
+      border-color: var(--contrast);
+     /* background-color: rgb(226, 255, 226);*/
+    }
+
+    .grid-action p {
+      line-height: 40px;
+      margin: 0;
+      padding: 0 8px;
+      height: 40px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+
     .grid-row-0.grid-success { color: rgb(87, 156, 201); }
     .grid-row-1.grid-success { color: rgb(87, 156, 201); }
     .grid-row-2.grid-success { color: rgb(214, 69, 59); }
@@ -61,88 +158,40 @@
     .grid-row-1.grid-failure { color: rgb(87, 156, 201); }
     .grid-row-2.grid-failure { color: rgb(214, 69, 59); }
 
-    .button-action {
-      font-size: 20px;
-      min-height: 40px;
-      min-width: 110px;
-      padding: 0;
-      margin: 0 10px;
-      background-color: white;
-      border-radius: 8px;
-      border-style: solid;
-    }
-
-    .button-action:hover {
-      background-color: Gainsboro;
-    }
-
     .grid-row-0 .button-action { color: rgb(87, 156, 201); }
     .grid-row-1 .button-action { color: rgb(87, 156, 201); }
     .grid-row-2 .button-action { color: rgb(214, 69, 59);; }
 
-    .button-action.button-facet {
-      min-width: 220px;
-    }
-
     .button-action.button-facet.button-facet-max {
-      border-color: rgb(204, 173, 0);
-      background-color: Gold;
+      border-color: rgb(250, 237, 163);
+      background-color: rgb(255, 238, 138);
+    }
+    .button-action.button-facet {
+      color: #3d3d3d;
     }
 
     .button-action.button-facet.button-facet-max:hover {
-      background-color: rgb(204, 173, 0);
-    }
-
-    .control {
-      font-size: 20px;
-      min-width: 120px;
-      min-height: 40px;
-      margin: 10px;
+      background-color: rgb(250, 237, 163);
     }
 
     #instructions-toggle { color: Black; }
     #instructions-toggle:hover { color: rgb(87, 156, 201); }
-    #instructions { max-width: 510px; }
-    #instructions ol li { margin: 10px 0; }
 
     .hidden {
       display: none;
       overflow: hidden;
     }
+
     </style>
   </head>
   <body>
-    <div class="parameter">
-      <b><a href="https://github.com/nwtnni/facet">Ability Stone Facet Calculator</a></b>
-    </div>
 
-    <div class="parameter">
-      <div id="instructions-toggle">Expand instructions: ►</div>
-      <div id="instructions" class="hidden">
-        <p>
-          This calculator shows the <b>maximum probability</b> of achieving a <b>completed</b> stone
-          that satisfies <b>all</b> chosen minimum and maximum values. This probability is only accurate
-          if you select the calculator's optimal choice at <b>every</b> step. For basic usage:
-        </p>
-        <ol>
-          <li>Select rarity tier (number of slots per line).</li>
-          <li>Select target values for each line.</li>
-          <li>If your stone already has filled slots, facet the grid to match it using the hammer buttons on the right.</li>
-          <li><b>Click the Start button to begin calculating probabilities.</b></li>
-          <li>Each hammer shows the maximum probability of achieving the goal if you facet that line next.</li>
-          <li>Record the in-game outcome (success or failure) after clicking a hammer.</li>
-          <li>Repeat (5) - (6) with updated probabilities.</li>
-        </ol>
-        <p>
-          For example, clicking <b>Start</b> with the default settings shows that
-          there is a 4.81% chance of ending up with a 7+/7+/4- ability stone if you
-          choose line one first, but only a 2.86% chance if you choose line three first.
-        </p>
-      </div>
+   <main class="container">
+    <div class="miniheader">
+      <b><a href="https://github.com/nwtnni/facet">Ability Stone Calculator</a></b>
     </div>
-
-    <div class="parameter">
-      <label for="rarity">Ability stone rarity:</label>
+    <div class="grid">
+      <div><label for="rarity">Rarity</label>
       <select id="rarity">
         <option value="6">Rare (6)</option>
         <option value="8">Epic (8)</option>
@@ -150,39 +199,72 @@
         <option value="10" selected="selected">Relic (10)</option>
       </select>
     </div>
-
-    <div class="parameter">
-      <label for="target-line-0">Target minimum for first line:</label>
-      <input type="number" class="target" id="target-line-0" min="0" max="10" value="7">
+    <div></div>
     </div>
+    <div><label for="target">Targets</label>
+    </div>
+    <div class="grid" id="target">
 
     <div class="parameter">
-      <label for="target-line-1">Target minimum for second line:</label>
+     <input type="number" class="target" id="target-line-0" min="0" max="10" value="7">
+    </div>
+    <div class="parameter">
       <input type="number" class="target" id="target-line-1" min="0" max="10" value="7">
     </div>
 
     <div class="parameter">
-      <label for="target-line-2">Target maximum for third line:</label>
       <input type="number" class="target" id="target-line-2" min="0" max="10" value="4">
     </div>
 
-    <div class="parameter">
-      <label for="chance">Current chance of success:</label>
-      <input type="number" id="chance" min="25" max="75" step="10" value="75">
+    <div><input type="button" id="add-target" class="outline contrast" value="Add" /></div>
+    <div><input type="button" id="add-target-exact" class="secondary outline hidden" value="Exact" /></div>
+  </div>
+  <div class="target-list" id="target-list">
+  </div>
+
+
+
+
+    <div id="grid-head" class="grid-head">
+      <div></div> <div class="grid-head-success">Success Rate <span id="chance">75</span>%</div>
     </div>
+      <div id="grid" class="grid"></div>
+      <div id="grid-foot" class="grid-head">
+        <div><input type="button" id="reset" class="outline secondary" value="Next" /></div>
+        <div><input type="button" id="undo" class="outline secondary" value="Undo" /></div>
+      </div>
+  </div>
 
-    <div class="parameter">
-      <label for="chance">Probability precision (decimal places to display):</label>
-      <input type="number" id="precision" min="0" max="10" step="1" value="2">
+    <button id="start" class="control hidden">Start</button>
+
+
+    <div class="parameter hidden">
+      <div id="instructions-toggle"></div>
+      <div id="instructions">
+        <h4>Instructions</h4>
+        <p>
+          This calculator shows the probability of achieving a completed stone. For basic usage:
+        </p>
+        <ol>
+          <li>Select target stone then press add. Repeat as desired.</li>
+          <li>Tap the stone in-game on the highlighted row.</li>
+          <li>Record the in-game outcome by hitting the filled diamond for success, hollow diamond for failure.</li>
+          <li>Repeat 2 & 3 until the stone is complete.</li>
+        </ol>
+        <h4> Example #1 </h4>
+        <p>To configure the calculator for a 7/7/4 or 9/5/4 or 5/9/4:</p>
+        <ol>
+          <li>Press "Add" next to the default 7, 7, 4 input boxes.</li>
+          <li>Set targets to 9, 5, and 4.</li>
+          <li>Press "Add".</li>
+        </ol>
+        
+        <p>At this point, "7/7/4", "9/5/4", and "5/9/4" will be in the targets area with a grey background. Clicking on any entry will remove it from the target list.
+      </p>
+      
+      </div>
     </div>
-
-    <div id="grid">
-    </div>
-
-    <button id="start" class="control">Start</button>
-    <button id="undo" class="control">Undo</button>
-    <button id="reset" class="control">Reset</button>
-
+    </body>
     <script type="module">
       import * as facet from "./pkg/facet.js";
 
@@ -192,11 +274,15 @@
         const rarity = document.getElementById("rarity");
         const target = document.querySelectorAll(".target");
         const chance = document.getElementById("chance");
-        const precision = document.getElementById("precision");
         const start = document.getElementById("start");
         const grid = document.getElementById("grid");
+        const gridHead = document.getElementById("grid-head");
+        const gridFoot = document.getElementById("grid-foot");
+        const facetTap = document.getElementById("facet-tap");
+        const facetOutcome = document.getElementById("facet-outcome");
         const undo = [];
-
+        const addTarget = document.getElementById("add-target");
+        const addTargetExact = document.getElementById("add-target-exact");
         const facetButtons = [];
         const successButtons = [];
         const failureButtons = [];
@@ -204,6 +290,8 @@
         const stone = [[], [], []];
         const probability = [null, null, null];
         let faceting = false;
+
+        let targets = [];
 
         function getRarity() {
           return parseInt(rarity.value);
@@ -220,7 +308,7 @@
             return null;
           }
 
-          return grid.children[row * (getRarity() + 1) + stone[row].length];
+          return grid.children[row * (getRarity() + 3) + stone[row].length];
         }
 
         // Get `div` containing action buttons (facet, success, failure) in row.
@@ -229,20 +317,21 @@
             return null;
           }
 
-          return grid.children[row * (getRarity() + 1) + getRarity()];
+          return grid.children[row * (getRarity() + 3) + getRarity()];
         }
 
         // Return an ordinal within [0, 1, ..., 5] for compatibility with the Rust ABI.
         function getChance() {
-          return Math.floor((parseInt(chance.value) - 25) / 10);
+          return Math.floor((parseInt(chance.textContent) - 25) / 10);
         }
 
         function getPrecision() {
-          return parseInt(precision.value);
+          return 4;
         }
 
         function getStart() {
-          return start.textContent === "Stop";
+          return true;
+          //return start.textContent === "Stop";
         }
 
         function getTarget() {
@@ -250,6 +339,9 @@
         }
 
         function getTargets() {
+          if (targets.length > 0) {
+            return targets;
+          }
           return [getTarget()];
         }
 
@@ -275,7 +367,7 @@
         }
 
         function resetChance() {
-          chance.value = 75;
+          chance.textContent = 75;
           chance.previous = 75;
         }
 
@@ -292,6 +384,9 @@
             if (facetButtons[row]) {
               facetButtons[row].textContent = "🔨";
               facetButtons[row].classList.remove("button-facet-max");
+              successButtons[row].classList.remove("button-facet-max");
+              failureButtons[row].classList.remove("button-facet-max");
+
             }
           }
         }
@@ -314,21 +409,20 @@
         // On a failed roll, the chance increases by 10% to a maximum of 75%.
         function updateChance(success) {
           if (success) {
-            chance.value = Math.max(25, parseInt(chance.value) - 10);
+            chance.textContent = Math.max(25, parseInt(chance.textContent) - 10);
           } else {
-            chance.value = Math.min(75, parseInt(chance.value) + 10);
+            chance.textContent = Math.min(75, parseInt(chance.textContent) + 10);
           }
         }
 
         function updateUndo(row) {
           undo.push([
-            [target[0].previous, target[1].previous, target[2].previous],
             chance.previous,
             row,
-            [...probability],
+            [...probability]
           ]);
 
-          chance.previous = chance.value;
+          chance.previous = chance.textContent;
           for (let _row = 0; _row < 3; _row++) {
             target[_row].previous = target[_row].value;
           }
@@ -370,35 +464,25 @@
 
           for (let row = 0; row < 3; row++) {
             const percentage = probability[row] * 100.0;
-            facetButtons[row].textContent = "🔨 (" + percentage.toFixed(getPrecision()) + "%)";
+            facetButtons[row].textContent = "" + percentage.toFixed(getPrecision()) + "%";
             if (probability[row] === max && getAction(row)) {
               facetButtons[row].classList.add("button-facet-max");
+              successButtons[row].classList.add("button-facet-max");
+              failureButtons[row].classList.add("button-facet-max");
               max = null;
             } else {
               facetButtons[row].classList.remove("button-facet-max");
+              failureButtons[row].classList.remove("button-facet-max");
+              successButtons[row].classList.remove("button-facet-max");
             }
           }
         }
 
         function onFacet(row) {
-          const action = getAction(row);
-          action.appendChild(successButtons[row]);
-          action.appendChild(failureButtons[row]);
-          faceting = true;
 
-          for (let any = 0; any < 3; any++) {
-            if (getAction(any)) {
-              getAction(any).removeChild(facetButtons[any]);
-            }
-          }
         }
 
         function onRecord(row, success) {
-          const action = getAction(row);
-          action.removeChild(successButtons[row]);
-          action.removeChild(failureButtons[row]);
-          faceting = false;
-
           const current = getCurrent(row);
 
           if (success) {
@@ -413,12 +497,12 @@
           updateUndo(row);
           computeProbability();
           updateProbability();
-
+/*
           for (let any = 0; any < 3; any++) {
             if (getAction(any)) {
               getAction(any).appendChild(facetButtons[any]);
             }
-          }
+          }*/
         }
 
         function onUndo() {
@@ -426,7 +510,7 @@
             return;
           }
 
-          const [_target, _chance, row, _probability] = undo.pop();
+          const [_chance, row, _probability] = undo.pop();
 
           if (row !== null) {
             stone[row].pop();
@@ -434,27 +518,12 @@
             current.textContent = "◇";
             current.classList.remove("grid-success");
             current.classList.remove("grid-failure");
-            if (!faceting) {
-              getAction(row).appendChild(facetButtons[row]);
-            }
           }
 
-          chance.value = _chance;
+          chance.textContent = _chance;
           chance.previous = _chance;
 
-          for (let row = 0; row < 3; row++) {
-            target[row].value = _target[row];
-            target[row].previous = _target[row];
-          }
-
-          if (_probability.every(defined => defined)) {
-            for (let row = 0; row < 3; row++) {
-              probability[row] = _probability[row];
-            }
-          } else {
-            computeProbability();
-          }
-
+          computeProbability();
           updateProbability();
         }
 
@@ -464,11 +533,14 @@
           resetProbability();
           resetStart();
           resetStone();
-          resetTarget();
+          //resetTarget();
           resetUndo();
 
           grid.textContent = "";
-          grid.className = "rarity-" + getRarity();
+          grid.className = "rarity-" + getRarity() + " grid";
+
+          gridHead.className = "grid-head rarity-" + getRarity();
+          gridFoot.className = "grid-head rarity-" + getRarity();
 
           for (let row = 0; row < 3; row++) {
             for (let col = 0; col < getRarity(); col++) {
@@ -480,34 +552,113 @@
               grid.appendChild(div);
             }
 
-            const action = document.createElement("div");
+
+
+            let action = document.createElement("div");
+            action.classList.add("grid-row-" + row);
+            action.classList.add("grid-action");
+            //action.classList.add("grid");
+
+            const success = document.createElement("a");
+            success.href = "javascript:";
+            success.textContent = "◆";
+            success.classList.add("button-action");
+            success.classList.add("outline");
+            success.classList.add("contrast");
+            success.role = "button"
+            success.onclick = () => onRecord(row, true);
+            successButtons.push(success);
+            action.appendChild(success);
+
+            grid.appendChild(action);
+
+            action = document.createElement("div");
             action.classList.add("grid-row-" + row);
             action.classList.add("grid-action");
 
-            const facet = document.createElement("button");
+            const failure = document.createElement("a");
+            failure.href = "javascript:";
+            failure.textContent = "◇";
+            failure.classList.add("button-action");
+            failure.classList.add("outline");
+            failure.classList.add("contrast");
+            failure.role = "button";
+            failure.onclick = () => onRecord(row, false);
+            failureButtons.push(failure);
+            action.appendChild(failure);
+            grid.appendChild(action);
+
+            action = document.createElement("div");
+
+            action.classList.add("grid-row-" + row);
+            action.classList.add("grid-action");
+
+            const facet = document.createElement("p");
             facet.textContent = "🔨";
             facet.classList.add("button-facet");
             facet.classList.add("button-action");
             facet.onclick = () => onFacet(row);
-            facetButtons.push(facet);
             action.appendChild(facet);
-
-            const success = document.createElement("button");
-            success.textContent = "◆";
-            success.classList.add("button-action");
-            success.onclick = () => onRecord(row, true);
-            successButtons.push(success);
-
-            const failure = document.createElement("button");
-            failure.textContent = "◇";
-            failure.classList.add("button-action");
-            failure.onclick = () => onRecord(row, false);
-            failureButtons.push(failure);
+            facetButtons.push(facet);
+            //action.appendChild(facet);
 
             grid.appendChild(action);
           }
+
+          //targets = [];
+          updateTargets();
         }
 
+        function updateTargets() {
+          const ele = document.getElementById("target-list");
+          ele.innerHTML = "";
+
+          for (let targ in targets) {
+            const tele = document.createElement('div');
+            tele.innerHTML = targets[targ].join("/");
+            tele.className = "target-list-item";
+            tele.dataset.idx = targ;
+            ele.appendChild(tele);
+          }
+
+          if (targets.length == 0) {
+            const tele = document.createElement('div');
+            tele.innerHTML = getTarget().join("/");
+            tele.className = "target-list-item-fake";
+            ele.appendChild(tele);
+          }
+
+          computeProbability();
+          updateProbability();
+        }
+
+        function addToTargets(targ) {
+          for (let idx in targets) {
+              let item = targets[idx];
+              if (item[0] == targ[0] && item[1] == targ[1] && item[2] == targ[2]) {
+                return;
+              }
+            }
+          targets.push(targ);
+        }
+
+        function newTargets(try_reverse) {
+          const targ = getTarget();
+          addToTargets(targ);
+          if (try_reverse == true) {
+            addToTargets([targ[1], targ[0], targ[2]]);
+          }
+          updateTargets();
+        }
+
+        addTarget.addEventListener("click", function(e) {
+          newTargets(true);
+        });
+
+        addTargetExact.onclick = () => {
+          newTargets(false);
+        }
+ 
         start.onclick = () => {
           start.textContent = (start.textContent === "Start") ? "Stop" : "Start";
           if (getStart()) {
@@ -521,9 +672,9 @@
         chance.previous = 75;
         chance.onchange = change => {
           const previous = parseInt(chance.previous);
-          chance.value = clampChance(parseInt(chance.value));
+          chance.textContent = clampChance(parseInt(chance.textContent));
 
-          if (previous === chance.value) {
+          if (previous === chance.textContent) {
             return;
           }
 
@@ -538,29 +689,21 @@
             const previous = parseInt(target[row].previous);
             target[row].value = clampTarget(parseInt(target[row].value));
 
-            if (previous === target[row].value) {
+            if (previous === target[row].value || targets.length > 0) {
               return;
             }
 
             updateUndo(null);
+            updateTargets();
             computeProbability();
             updateProbability();
           }
         }
 
-        precision.onchange = () => {
-          precision.value = clampPrecision(getPrecision());
-          updateProbability();
-        }
-
         rarity.previous = rarity.value;
         rarity.onchange = () => {
-          if (stone.every(line => line.length === 0) || confirm("This will clear the grid. Are you sure you want to reset?")) {
-            rarity.previous = rarity.value;
-            resetGrid();
-          } else {
-            rarity.value = rarity.previous;
-          }
+          rarity.previous = rarity.value;
+          resetGrid();
         };
 
         document.getElementById("undo").onclick = () => onUndo();
@@ -575,6 +718,16 @@
             instructionsToggle.textContent = "Expand instructions: ►"
           }
         };
+
+        document.addEventListener("click", function(e) {
+          const closest = e.target.closest(".target-list-item");
+
+          if (closest) {
+            console.log(closest.dataset.idx);
+            targets.splice(closest.dataset.idx, 1);
+            updateTargets();
+          }
+        });
 
         resetGrid();
       });
